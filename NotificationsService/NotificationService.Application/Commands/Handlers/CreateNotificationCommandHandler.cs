@@ -1,4 +1,5 @@
-﻿using Infrastructure.Abstractions.Abstractions.Repositores.Notifications;
+﻿using Infrastructure.Abstractions.Abstractions;
+using Infrastructure.Abstractions.Abstractions.Repositores.Notifications;
 using MediatR;
 using NotificationService.Domain.Entities;
 using System;
@@ -24,11 +25,15 @@ namespace NotificationService.Application.Commands.Handlers
     public class CreateNotificationCommandHandler
         : IRequestHandler<CreateNotificationCommand, bool>
     {
-        private readonly INotificationCommandRepository _repository;
+        private readonly ICommandRepository<Notification> _baseRepository;
+        private readonly INotificationCommandRepository _notificationCommandSpecific;
 
-        public CreateNotificationCommandHandler(INotificationCommandRepository repository)
+        public CreateNotificationCommandHandler(
+            INotificationCommandRepository repositorySpecific, 
+            ICommandRepository<Notification> commandRepository)
         {
-            _repository = repository;
+            _notificationCommandSpecific = repositorySpecific;
+            _baseRepository = commandRepository;
         }
 
         /// <summary>
@@ -48,19 +53,17 @@ namespace NotificationService.Application.Commands.Handlers
                 throw new ArgumentNullException(nameof(request));
             }
 
-            var notification = new Notification
-            {
-                Id = Guid.NewGuid(),
-                Title = request.Title,
-                Message = request.Message,
-                Status = request.Status,
-                Type = request.Type,
-                Priority = request.Priority,
-                CreatedAt = request.CreatedAt,
-                UserId = request.UserId
-            };
+            var notification = new Notification(
+                Guid.NewGuid(),
+                request.Title,
+                request.Message,
+                request.Status,
+                request.Type,
+                request.Priority,
+                request.CreatedAt,
+                request.UserId);
 
-            return await _repository.AddAsync(notification);
+            return await _baseRepository.AddAsync(notification);
         }
     }
 }

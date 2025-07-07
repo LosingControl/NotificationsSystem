@@ -12,6 +12,9 @@ namespace NotificationService.Infrastructure.Data.Configurations
     /// <summary>Конфигурация таблицы пользователей в БД</summary>
     public class ConfigureUsers : IEntityTypeConfiguration<User>
     {
+        public ConfigureUsers()
+        { }
+
         public void Configure(EntityTypeBuilder<User> builder)
         {
             builder.HasKey(u => u.Id);

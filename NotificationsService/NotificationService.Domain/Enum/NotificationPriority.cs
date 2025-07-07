@@ -15,8 +15,24 @@ namespace NotificationService.Domain.Enum
     /// </remarks>
     public enum NotificationPriority
     {
-        Low,
-        Medium,
-        High
+        /// <summary>
+        /// Приоритет не задан
+        /// </summary>
+        Undefined = 0,
+
+        /// <summary>
+        /// Низкий приоритет - обрабатывается в последнюю очередь (используется по умолчанию)
+        /// </summary>
+        Low = 1,
+
+        /// <summary>
+        /// Средний приоритет - стандартная обработка
+        /// </summary>
+        Medium = 2,
+
+        /// <summary>
+        /// Высокий приоритет - обрабатывается в первую очередь
+        /// </summary>
+        High = 3
     }
 }

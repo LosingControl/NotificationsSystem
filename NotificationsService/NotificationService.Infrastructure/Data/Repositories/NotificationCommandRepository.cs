@@ -1,4 +1,5 @@
 ﻿using Infrastructure.Abstractions.Abstractions.Repositores.Notifications;
+using Infrastructure.Abstractions.BaseRepositories.GenericRepositories;
 using Microsoft.EntityFrameworkCore;
 using NotificationService.Domain.Entities;
 using NotificationService.Infrastructure.Data;
@@ -21,67 +22,9 @@ namespace NotificationService.Infrastructure.Data.Repositories
     ///   <item>Удаление уведомлений</item>
     /// </list>
     /// </remarks>
-    public class NotificationCommandRepository : INotificationCommandRepository
+    public class NotificationCommandRepository : CommandRepository<Notification>, INotificationCommandRepository
     {
-        private readonly AppDbContext _bdContext;
-
-        public NotificationCommandRepository(AppDbContext bdContext)
-        {
-            _bdContext = bdContext;
-        }
-
-        /// <summary>
-        /// Добавляет новое уведомление в базу данных
-        /// </summary>
-        /// <param name="entity">Добавляемое уведомление</param>
-        /// <returns>
-        /// true - если уведомление успешно добавлено,
-        /// false - если произошла ошибка
-        /// </returns>
-        /// <exception cref="ArgumentNullException">Если передан null</exception>
-        public async Task<bool> AddAsync(Notification entity)
-        {
-            if (entity == null) 
-            {
-                throw new ArgumentNullException(nameof(entity));
-            }
-
-            await _bdContext.Notifications.AddAsync(entity);
-
-            return await _bdContext.SaveChangesAsync() > 0;
-        }
-
-        /// <summary>
-        /// Удаляет уведомление по указанному идентификатору
-        /// </summary>
-        /// <param name="id">Идентификатор уведомления</param>
-        /// <returns>
-        /// <c>true</c> - если уведомление было успешно удалено,
-        /// <c>false</c> - если уведомление с указанным ID не найдено
-        /// </returns>
-        /// <exception cref="ArgumentNullException">
-        /// Выбрасывается, если: Передан пустой Guid
-        /// </exception>
-        public async Task<bool> DeleteAsync(Guid id)
-        {
-            if (id == Guid.Empty)
-            {
-                throw new ArgumentNullException("Идентификатор уведомления не может быть пустым", nameof(id));
-            }
-
-            try
-            {
-                int deletedCount = await _bdContext.Notifications
-                    .Where(n => n.Id == id)
-                    .ExecuteDeleteAsync();
-
-                return deletedCount > 0;
-            }
-            catch (DbUpdateException ex)
-            {
-                // Необходимо сделать: Логирование ошибки, кастомные ошибки
-                throw new NullReferenceException("Не удалось удалить уведомление либо оно не найдено", ex);
-            }
-        }
+        public NotificationCommandRepository(AppDbContext bdContext) : base(bdContext)
+        { }
     }
 }

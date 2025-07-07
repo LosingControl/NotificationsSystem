@@ -15,7 +15,7 @@ namespace Infrastructure.Abstractions.Abstractions
         /// <summary>
         /// Получение сущности по ID
         /// </summary>
-        Task<TEntity?> GetByIdAsync(Guid id);
+        Task<TEntity?> GetByIdAsync(Guid? id);
 
         /// <summary>
         /// Получение всех сущностей

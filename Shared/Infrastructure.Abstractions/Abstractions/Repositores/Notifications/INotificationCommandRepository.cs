@@ -7,7 +7,9 @@ using System.Threading.Tasks;
 
 namespace Infrastructure.Abstractions.Abstractions.Repositores.Notifications
 {
-    public interface INotificationCommandRepository : ICommandRepository<Notification>
-    {
-    }
+    /// <summary>
+    /// Интерфейс для специфичных команд, свойственных только для уведомлений
+    /// </summary>
+    public interface INotificationCommandRepository
+    { }
 }

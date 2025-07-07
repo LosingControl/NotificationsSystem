@@ -15,6 +15,6 @@ namespace NotificationService.Application.Queries
     /// <remarks>
     /// Содержит все необходимые данные для поиска уведомлений в системе.
     /// </remarks>
-    public record GetNotificationByStatusQuery(NotificationStatus Status) : IRequest<List<Notification>>
+    public record GetNotificationByStatusQuery(NotificationStatus? Status) : IRequest<List<Notification>>
     { }
 }

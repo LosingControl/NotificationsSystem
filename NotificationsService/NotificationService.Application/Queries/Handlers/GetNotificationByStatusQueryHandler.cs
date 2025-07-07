@@ -1,4 +1,5 @@
-﻿using Infrastructure.Abstractions.Abstractions.Repositores.Notifications;
+﻿using Infrastructure.Abstractions.Abstractions;
+using Infrastructure.Abstractions.Abstractions.Repositores.Notifications;
 using MediatR;
 using NotificationService.Domain.Entities;
 using System;
@@ -19,11 +20,15 @@ namespace NotificationService.Application.Queries.Handlers
     public class GetNotificationByStatusQueryHandler
         : IRequestHandler<GetNotificationByStatusQuery, List<Notification>>
     {
-        private readonly INotificationQueryRepository _repository;
+        private readonly IQueryRepository<Notification> _baseRepository;
+        private readonly INotificationQueryRepository _notificationQuerySpecific;
 
-        public GetNotificationByStatusQueryHandler(INotificationQueryRepository repository)
+        public GetNotificationByStatusQueryHandler(
+            INotificationQueryRepository repositorySpecific,
+            IQueryRepository<Notification> queryRepository)
         {
-            _repository = repository;
+            _notificationQuerySpecific = repositorySpecific;
+            _baseRepository = queryRepository;
         }
 
         /// <summary>
@@ -43,7 +48,7 @@ namespace NotificationService.Application.Queries.Handlers
                 throw new ArgumentNullException(nameof(request));
             }
 
-            return await _repository.GetByStatusAsync(request.Status);
+            return await _notificationQuerySpecific.GetByStatusAsync(request.Status, cancellationToken);
         }
     }
 }

@@ -13,6 +13,9 @@ namespace NotificationService.Infrastructure.Data.Configurations
     /// <summary>Конфигурация таблицы уведомлений в БД</summary>
     public class ConfigureNotifications : IEntityTypeConfiguration<Notification>
     {
+        public ConfigureNotifications()
+        { }
+
         public void Configure(EntityTypeBuilder<Notification> builder)
         {
             builder.HasKey(n => n.Id);

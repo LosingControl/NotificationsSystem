@@ -12,6 +12,9 @@ namespace NotificationService.Infrastructure.Data.Configurations
     /// <summary>Конфигурация таблицы архивных уведомлений в БД</summary>
     public class ConfigureArchives : IEntityTypeConfiguration<NotificationArchive>
     {
+        public ConfigureArchives()
+        { }
+
         public void Configure(EntityTypeBuilder<NotificationArchive> builder)
         {
             builder.HasKey(a => a.Id);

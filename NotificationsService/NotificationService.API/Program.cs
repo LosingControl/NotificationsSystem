@@ -1,4 +1,6 @@
+using Infrastructure.Abstractions.Abstractions;
 using Infrastructure.Abstractions.Abstractions.Repositores.Notifications;
+using Infrastructure.Abstractions.BaseRepositories.GenericRepositories;
 using Microsoft.EntityFrameworkCore;
 using NotificationService.Application.Commands.Handlers;
 using NotificationService.Infrastructure.Data;
@@ -33,6 +35,9 @@ namespace NotificationService.API
                 options.UseNpgsql(dbConfiguration.GetConnectionString(nameof(AppDbContext)));
             });
 
+            builder.Services.AddScoped(typeof(ICommandRepository<>), typeof(CommandRepository<>));
+            builder.Services.AddScoped(typeof(IQueryRepository<>), typeof(QueryRepository<>));
+
             builder.Services.AddScoped<INotificationCommandRepository, NotificationCommandRepository>();
             builder.Services.AddScoped<INotificationQueryRepository, NotificationQueryRepository>();
 
@@ -51,7 +56,6 @@ namespace NotificationService.API
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
-
 
             app.MapControllers();
 

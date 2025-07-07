@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -42,10 +43,7 @@ namespace NotificationService.Infrastructure.Data
         /// </remarks>
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.ApplyConfiguration(new ConfigureNotifications());
-            modelBuilder.ApplyConfiguration(new ConfigureArchives());
-            modelBuilder.ApplyConfiguration(new ConfigureUsers());
-            modelBuilder.ApplyConfiguration(new ConfigureSmtpServers());
+            modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 
             base.OnModelCreating(modelBuilder);
         }

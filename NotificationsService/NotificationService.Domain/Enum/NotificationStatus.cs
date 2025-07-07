@@ -16,9 +16,29 @@ namespace NotificationService.Domain.Enum
     /// </remarks>
     public enum NotificationStatus
     {
-        Pending,
-        Sent,
-        Failed,
-        Retrying
+        /// <summary>
+        /// Статус не определен
+        /// </summary>
+        Undefined = 0,
+
+        /// <summary>
+        /// Ожидает отправки (начальное состояние)
+        /// </summary>
+        Pending = 1,
+
+        /// <summary>
+        /// Успешно отправлено
+        /// </summary>
+        Sent = 2,
+
+        /// <summary>
+        /// Ошибка отправки
+        /// </summary>
+        Failed = 3,
+
+        /// <summary>
+        /// Повторная попытка отправки (временный статус)
+        /// </summary>
+        Retrying = 4
     }
 }

@@ -1,4 +1,5 @@
-﻿using Infrastructure.Abstractions.Abstractions.Repositores.Notifications;
+﻿using Infrastructure.Abstractions.Abstractions;
+using Infrastructure.Abstractions.Abstractions.Repositores.Notifications;
 using MediatR;
 using NotificationService.Domain.Entities;
 using System;
@@ -24,12 +25,15 @@ namespace NotificationService.Application.Queries.Handlers
     public class GetNotificationByUserIdQueryHandler
         : IRequestHandler<GetNotificationByUserIdQuery, List<Notification>>
     {
+        private readonly IQueryRepository<Notification> _baseRepository;
+        private readonly INotificationQueryRepository _notificationQuerySpecific;
 
-        private readonly INotificationQueryRepository _repository;
-
-        public GetNotificationByUserIdQueryHandler(INotificationQueryRepository repository)
+        public GetNotificationByUserIdQueryHandler(
+            INotificationQueryRepository repository,
+            IQueryRepository<Notification> queryRepository)
         {
-            _repository = repository;
+            _notificationQuerySpecific = repository;
+            _baseRepository = queryRepository;
         }
 
         /// <summary>
@@ -55,7 +59,7 @@ namespace NotificationService.Application.Queries.Handlers
                 throw new ArgumentException("ID пользователя не может быть пустым!", nameof(request.Id));
             }
 
-            return await _repository.GetByUserIdAsync(request.Id);
+            return await _notificationQuerySpecific.GetByUserIdAsync(request.Id, cancellationToken);
         }
     }
 }

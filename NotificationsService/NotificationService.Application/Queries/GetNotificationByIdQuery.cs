@@ -15,6 +15,6 @@ namespace NotificationService.Application.Queries
     /// <remarks>
     /// Содержит все необходимые данные для поиска уведомления в системе.
     /// </remarks>
-    public record GetNotificationByIdQuery(Guid Id) : IRequest<Notification?>
+    public record GetNotificationByIdQuery(Guid? Id) : IRequest<Notification?>
     { }
 }
