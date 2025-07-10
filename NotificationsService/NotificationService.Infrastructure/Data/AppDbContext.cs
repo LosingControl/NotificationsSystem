@@ -1,13 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using NotificationService.Domain.Entities;
-using NotificationService.Infrastructure.Data.Configurations;
-using System;
-using System.Collections.Generic;
-using System.Data.Common;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NotificationService.Infrastructure.Data
 {

@@ -5,7 +5,6 @@ using Infrastructure.Abstractions.BaseRepositories.GenericRepositories;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using NLog;
-using NLog.Extensions.Logging;
 using NLog.Web;
 using NotificationService.API.Middlewares;
 using NotificationService.Application.Behaviors;

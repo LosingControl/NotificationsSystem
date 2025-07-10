@@ -2,12 +2,6 @@
 using NotificationService.Application.Common.DTO_s;
 using NotificationService.Application.Common.Pagination;
 using NotificationService.Domain.Entities;
-using NotificationService.Domain.Enum;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NotificationService.Application.Queries
 {

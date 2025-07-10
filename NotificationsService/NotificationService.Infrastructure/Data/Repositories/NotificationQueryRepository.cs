@@ -3,14 +3,8 @@ using Infrastructure.Abstractions.BaseRepositories.GenericRepositories;
 using Microsoft.EntityFrameworkCore;
 using NotificationService.Domain.Entities;
 using NotificationService.Domain.Enum;
-using NotificationService.Infrastructure.Data;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NotificationService.Infrastructure.Data.Repositories
 {
@@ -23,8 +17,7 @@ namespace NotificationService.Infrastructure.Data.Repositories
     public class NotificationQueryRepository : QueryRepository<Notification>, INotificationQueryRepository
     {
         public NotificationQueryRepository(AppDbContext bdContext) : base(bdContext)
-        {
-        }
+        { }
 
         /// <summary>
         /// Получает пагинированный список уведомлений с фильтрацией

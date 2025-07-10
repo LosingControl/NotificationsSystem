@@ -3,12 +3,7 @@ using Infrastructure.Abstractions.Abstractions.Repositores.Notifications;
 using MediatR;
 using NotificationService.Application.Common.Pagination;
 using NotificationService.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NotificationService.Application.Queries.Handlers
 {

@@ -1,4 +1,3 @@
-using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using NotificationService.Application.Commands;
@@ -6,7 +5,6 @@ using NotificationService.Application.Common.DTO_s;
 using NotificationService.Application.Common.Pagination;
 using NotificationService.Application.Queries;
 using NotificationService.Domain.Entities;
-using NotificationService.Domain.Enum;
 
 namespace NotificationService.API.Controllers
 {
@@ -49,7 +47,6 @@ namespace NotificationService.API.Controllers
             [FromBody] CreateNotificationCommand command,
             CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Создание уведомления");
             return await _mediator.Send(command, cancellationToken);
         }
 
@@ -78,7 +75,6 @@ namespace NotificationService.API.Controllers
         ///   <item>PageSize - количество элементов на странице (по умолчанию 20)</item>
         /// </list>
         /// </param>
-        /// <param name="validator">Валидатор</param>
         /// <param name="cancellationToken">Токен отмены операции</param>
         /// <returns>
         /// <response code="200">Успешно возвращен список уведомлений</response>
