@@ -39,6 +39,9 @@ namespace NotificationService.Application.Common.DTO_s
         /// </summary>
         public int PageSize { get; set; } = 20;
 
+        public NotificationFiltersDTO()
+        { }
+
         /// <summary>
         /// Инициализирует новый экземпляр класса NotificationFiltersDTO с указанными параметрами фильтрации.
         /// </summary>

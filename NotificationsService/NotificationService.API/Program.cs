@@ -1,8 +1,17 @@
+using FluentValidation;
 using Infrastructure.Abstractions.Abstractions;
 using Infrastructure.Abstractions.Abstractions.Repositores.Notifications;
 using Infrastructure.Abstractions.BaseRepositories.GenericRepositories;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
+using NLog;
+using NLog.Extensions.Logging;
+using NLog.Web;
+using NotificationService.API.Middlewares;
+using NotificationService.Application.Behaviors;
 using NotificationService.Application.Commands.Handlers;
+using NotificationService.Application.Queries.Validators;
+using NotificationService.Application.Validations;
 using NotificationService.Infrastructure.Data;
 using NotificationService.Infrastructure.Data.Repositories;
 using System.Text.Json.Serialization;
@@ -15,51 +24,82 @@ namespace NotificationService.API
         {
             var builder = WebApplication.CreateBuilder(args);
             var dbConfiguration = builder.Configuration;
+            var logger = NLog.LogManager.Setup()
+                .LoadConfigurationFromFile("nlog.config")
+                .GetCurrentClassLogger();
 
-            // Add services to the container.
-
-            builder.Services.AddControllers()
-                .AddJsonOptions(option => option.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
-
-            builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen(option =>
+            try
             {
-                var filePath = AppContext.BaseDirectory;
+                // Add services to the container.
+                builder.Services.AddControllers()
+                    .AddJsonOptions(option => option.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
-                var xmlPath = Path.Combine(filePath, "NotificationService.API.xml");
-                option.IncludeXmlComments(xmlPath);
-            });
+                builder.Services.AddEndpointsApiExplorer();
+                builder.Services.AddSwaggerGen(option =>
+                {
+                    var filePath = AppContext.BaseDirectory;
 
-            builder.Services.AddDbContext<AppDbContext>(options =>
-            {
-                options.UseNpgsql(dbConfiguration.GetConnectionString(nameof(AppDbContext)));
-            });
+                    var xmlPath = Path.Combine(filePath, "NotificationService.API.xml");
+                    option.IncludeXmlComments(xmlPath);
+                });
 
-            builder.Services.AddScoped(typeof(ICommandRepository<>), typeof(CommandRepository<>));
-            builder.Services.AddScoped(typeof(IQueryRepository<>), typeof(QueryRepository<>));
+                builder.Logging.ClearProviders();
+                builder.Host.UseNLog();
 
-            builder.Services.AddScoped<INotificationCommandRepository, NotificationCommandRepository>();
-            builder.Services.AddScoped<INotificationQueryRepository, NotificationQueryRepository>();
+                builder.Services.AddValidatorsFromAssembly(typeof(GetNotificationsByFilterQueryValidator).Assembly);
 
-            builder.Services.AddMediatR(cfg =>
-                cfg.RegisterServicesFromAssembly(typeof(CreateNotificationCommandHandler).Assembly));
+                builder.Services.AddDbContext<AppDbContext>(options =>
+                {
+                    options.UseNpgsql(dbConfiguration.GetConnectionString(nameof(AppDbContext)));
+                });
+                builder.Services.AddScoped<DbContext>(provider =>
+                    provider.GetRequiredService<AppDbContext>());
 
-            var app = builder.Build();
+                builder.Services.AddScoped(typeof(ICommandRepository<>), typeof(CommandRepository<>));
+                builder.Services.AddScoped(typeof(IQueryRepository<>), typeof(QueryRepository<>));
 
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI();
+                builder.Services.AddScoped<INotificationCommandRepository, NotificationCommandRepository>();
+                builder.Services.AddScoped<INotificationQueryRepository, NotificationQueryRepository>();
+
+                builder.Services.AddMediatR(cfg =>
+                    cfg.RegisterServicesFromAssembly(typeof(CreateNotificationCommandHandler).Assembly));
+
+                builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
+                builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+
+                var app = builder.Build();
+
+                // Configure the HTTP request pipeline.
+                if (app.Environment.IsDevelopment())
+                {
+                    app.UseSwagger();
+                    app.UseSwaggerUI();
+                }
+
+                app.UseMiddleware<ExceptionHandlingMiddleware>();
+
+                app.UseHttpsRedirection();
+
+                app.UseAuthorization();
+
+                app.MapControllers();
+
+                app.Lifetime.ApplicationStopped.Register(() =>
+                {
+                    NLog.LogManager.Shutdown();
+                });
+
+                app.Run();
             }
-
-            app.UseHttpsRedirection();
-
-            app.UseAuthorization();
-
-            app.MapControllers();
-
-            app.Run();
+            catch (Exception ex)
+            {
+                logger.Error(ex, "Application crashed!");
+                throw;
+            }
+            finally
+            {
+                NLog.LogManager.Shutdown();
+            }
         }
     }
 }

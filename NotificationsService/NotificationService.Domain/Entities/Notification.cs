@@ -16,26 +16,6 @@ namespace NotificationService.Domain.Entities
     /// </remarks>
     public class Notification
     {
-        public Notification(
-            Guid id, 
-            string? title, 
-            string message, 
-            NotificationStatus status, 
-            NotificationType type, 
-            NotificationPriority priority, 
-            DateTime createdAt, 
-            Guid userId)
-        {
-            Id = id;
-            Title = title;
-            Message = message;
-            Status = status;
-            Type = type;
-            Priority = priority;
-            CreatedAt = createdAt;
-            UserId = userId;
-        }
-
         /// <summary>
         /// Уникальный идентификатор уведомления.
         /// </summary>
@@ -90,5 +70,25 @@ namespace NotificationService.Domain.Entities
         /// Навигационное свойство для пользователя, связанного с уведомлением.
         /// </summary>
         public User User { get; set; }
+
+        public Notification(
+            Guid id,
+            string? title,
+            string message,
+            NotificationStatus status,
+            NotificationType type,
+            NotificationPriority priority,
+            DateTime createdAt,
+            Guid userId)
+        {
+            Id = id;
+            Title = title;
+            Message = message;
+            Status = status;
+            Type = type;
+            Priority = priority;
+            CreatedAt = createdAt;
+            UserId = userId;
+        }
     }
 }
