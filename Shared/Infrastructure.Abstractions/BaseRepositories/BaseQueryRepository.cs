@@ -30,9 +30,9 @@ namespace Infrastructure.Abstractions.BaseRepositories
         /// Возвращает список уведомлений.
         /// Возвращает пустой список, если уведомлений не найдено.
         /// </returns>
-        public virtual Task<List<TEntity>> GetAllAsync()
+        public virtual Task<List<TEntity>> GetAllAsync(CancellationToken cancellationToken)
         {
-            return _bdSet.AsNoTracking().ToListAsync();
+            return _bdSet.AsNoTracking().ToListAsync(cancellationToken);
         }
 
         /// <summary>
@@ -42,9 +42,9 @@ namespace Infrastructure.Abstractions.BaseRepositories
         /// <returns>
         /// Найденное уведомление или null, если не найдено
         /// </returns>
-        public virtual async Task<TEntity?> GetByIdAsync(Guid? id)
+        public virtual async Task<TEntity?> GetByIdAsync(Guid? id, CancellationToken cancellationToken)
         {
-            return await _bdSet.FindAsync(id);
+            return await _bdSet.FindAsync(id, cancellationToken);
         }
     }
 }

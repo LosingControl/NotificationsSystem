@@ -45,7 +45,7 @@ namespace NotificationService.Application.Commands.Handlers
         {
             if (request == null)
             {
-                throw new ArgumentNullException(nameof(request));
+                throw new ArgumentNullException(nameof(request), "Запрос не может быть пустым");
             }
 
             var notification = new Notification(
@@ -58,7 +58,7 @@ namespace NotificationService.Application.Commands.Handlers
                 request.CreatedAt,
                 request.UserId);
 
-            return await _baseRepository.AddAsync(notification);
+            return await _baseRepository.AddAsync(notification, cancellationToken);
         }
     }
 }

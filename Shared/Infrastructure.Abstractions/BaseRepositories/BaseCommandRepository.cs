@@ -31,11 +31,11 @@ namespace Infrastructure.Abstractions.BaseRepositories
         /// true - если уведомление успешно добавлено,
         /// false - если произошла ошибка
         /// </returns>
-        public virtual async Task<bool> AddAsync(TEntity entity)
+        public virtual async Task<bool> AddAsync(TEntity entity, CancellationToken cancellationToken)
         {
-            await _bdSet.AddAsync(entity);
+            await _bdSet.AddAsync(entity, cancellationToken);
 
-            return await _context.SaveChangesAsync() > 0;
+            return await _context.SaveChangesAsync(cancellationToken) > 0;
         }
 
         /// <summary>
@@ -46,9 +46,9 @@ namespace Infrastructure.Abstractions.BaseRepositories
         /// <c>true</c> - если уведомление было успешно удалено,
         /// <c>false</c> - если уведомление с указанным ID не найдено
         /// </returns>
-        public virtual async Task<bool> DeleteAsync(Guid id)
+        public virtual async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken)
         {
-            var entity = await _bdSet.FindAsync(id);
+            var entity = await _bdSet.FindAsync(id, cancellationToken);
 
             if (entity == null)
             {
@@ -56,7 +56,7 @@ namespace Infrastructure.Abstractions.BaseRepositories
             }
 
             _context.Remove(entity);
-            return await _context.SaveChangesAsync() > 0;
+            return await _context.SaveChangesAsync(cancellationToken) > 0;
         }
     }
 }

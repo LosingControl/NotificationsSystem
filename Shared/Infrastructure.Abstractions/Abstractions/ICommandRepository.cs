@@ -11,11 +11,11 @@ namespace Infrastructure.Abstractions.Abstractions
         /// <summary>
         /// Добавление новой сущности
         /// </summary>
-        Task<bool> AddAsync(TEntity entity);
+        Task<bool> AddAsync(TEntity entity, CancellationToken cancellationToken);
 
         /// <summary>
         /// Удаление сущности
         /// </summary>
-        Task<bool> DeleteAsync(Guid id);
+        Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken);
     }
 }
