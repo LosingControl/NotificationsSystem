@@ -11,6 +11,6 @@ namespace NotificationService.Application.Queries
     /// <remarks>
     /// Содержит все необходимые данные для поиска уведомлений.
     /// </remarks>
-    public record GetNotificationsByFilterQuery(NotificationFiltersDTO Filters) : IRequest<PaginatedListDTO<Notification>>
+    public record GetNotificationsByFilterQuery(NotificationFiltersDTO Filters) : IRequest<PaginatedListDTO<NotificationDTO>>
     { }
 }

@@ -31,6 +31,13 @@ namespace NotificationService.API.Middlewares
             {
                 await _next(httpContext);
             }
+            catch (InvalidOperationException ex)
+            {
+                await HandleExceptionAsync(
+                    httpContext,
+                    ex.Message,
+                    HttpStatusCode.BadRequest);
+            }
             catch (ValidationException ex)
             {
                 await HandleExceptionAsync(
@@ -40,7 +47,6 @@ namespace NotificationService.API.Middlewares
             }
             catch (Exception ex)
             {
-
                 await HandleExceptionAsync(
                     httpContext,
                     ex.Message,
@@ -69,6 +75,5 @@ namespace NotificationService.API.Middlewares
 
             await httpResponse.WriteAsJsonAsync(errorDTO);
         }
-
     }
 }

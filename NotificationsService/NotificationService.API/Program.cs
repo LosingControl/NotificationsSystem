@@ -1,3 +1,4 @@
+using AutoMapper;
 using FluentValidation;
 using Infrastructure.Abstractions.Abstractions;
 using Infrastructure.Abstractions.Abstractions.Repositores.Notifications;
@@ -9,10 +10,12 @@ using NLog.Web;
 using NotificationService.API.Middlewares;
 using NotificationService.Application.Behaviors;
 using NotificationService.Application.Commands.Handlers;
+using NotificationService.Application.MappingProfiles;
 using NotificationService.Application.Queries.Validators;
 using NotificationService.Application.Validations;
 using NotificationService.Infrastructure.Data;
 using NotificationService.Infrastructure.Data.Repositories;
+using System.Reflection;
 using System.Text.Json.Serialization;
 
 namespace NotificationService.API
@@ -51,6 +54,15 @@ namespace NotificationService.API
                 {
                     options.UseNpgsql(dbConfiguration.GetConnectionString(nameof(AppDbContext)));
                 });
+
+                builder.Services.AddAutoMapper(cfg =>
+                {
+                    cfg.AddMaps(typeof(NotificationProfile).Assembly);
+                });
+
+                builder.Services.AddMediatR(cfg =>
+                    cfg.RegisterServicesFromAssembly(typeof(CreateNotificationCommandHandler).Assembly));
+
                 builder.Services.AddScoped<DbContext>(provider =>
                     provider.GetRequiredService<AppDbContext>());
 
@@ -59,9 +71,6 @@ namespace NotificationService.API
 
                 builder.Services.AddScoped<INotificationCommandRepository, NotificationCommandRepository>();
                 builder.Services.AddScoped<INotificationQueryRepository, NotificationQueryRepository>();
-
-                builder.Services.AddMediatR(cfg =>
-                    cfg.RegisterServicesFromAssembly(typeof(CreateNotificationCommandHandler).Assembly));
 
                 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
                 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));

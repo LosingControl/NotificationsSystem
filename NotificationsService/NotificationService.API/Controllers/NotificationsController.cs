@@ -82,10 +82,10 @@ namespace NotificationService.API.Controllers
         /// <response code="500">Ошибка сервера при обработке запроса</response>
         /// </returns>
         [HttpGet]
-        [ProducesResponseType(typeof(PaginatedListDTO<Notification>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(PaginatedListDTO<NotificationDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<PaginatedListDTO<Notification>>> GetNotifications(
+        public async Task<ActionResult<PaginatedListDTO<NotificationDTO>>> GetNotifications(
             [FromQuery] NotificationFiltersDTO filters,
             CancellationToken cancellationToken)
         {

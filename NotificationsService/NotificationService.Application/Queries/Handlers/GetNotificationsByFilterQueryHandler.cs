@@ -1,6 +1,8 @@
-﻿using Infrastructure.Abstractions.Abstractions;
+﻿using AutoMapper;
+using Infrastructure.Abstractions.Abstractions;
 using Infrastructure.Abstractions.Abstractions.Repositores.Notifications;
 using MediatR;
+using NotificationService.Application.Common.DTO_s;
 using NotificationService.Application.Common.Pagination;
 using NotificationService.Domain.Entities;
 using System.Linq.Expressions;
@@ -21,17 +23,20 @@ namespace NotificationService.Application.Queries.Handlers
     /// </list>
     /// </remarks>
     public class GetNotificationsByFilterQueryHandler
-        : IRequestHandler<GetNotificationsByFilterQuery, PaginatedListDTO<Notification>>
+        : IRequestHandler<GetNotificationsByFilterQuery, PaginatedListDTO<NotificationDTO>>
     {
         private readonly IQueryRepository<Notification> _baseRepository;
         private readonly INotificationQueryRepository _notificationQuerySpecific;
+        private readonly IMapper _mapper;
 
         public GetNotificationsByFilterQueryHandler(
             INotificationQueryRepository repository,
-            IQueryRepository<Notification> queryRepository)
+            IQueryRepository<Notification> queryRepository,
+            IMapper mapper)
         {
             _notificationQuerySpecific = repository;
             _baseRepository = queryRepository;
+            _mapper = mapper;
         }
 
         /// <summary>
@@ -44,7 +49,7 @@ namespace NotificationService.Application.Queries.Handlers
         /// </returns>
         /// <exception cref="ArgumentNullException">Генерируется при передаче null запроса</exception>
         /// <exception cref="InvalidOperationException">Генерируется при ошибках выполнения запроса</exception>
-        public async Task<PaginatedListDTO<Notification>> Handle(
+        public async Task<PaginatedListDTO<NotificationDTO>> Handle(
             GetNotificationsByFilterQuery request, 
             CancellationToken cancellationToken)
         {
@@ -61,17 +66,18 @@ namespace NotificationService.Application.Queries.Handlers
                 request.Filters.PageSize,
                 cancellationToken);
 
+                var itemsDTO = items.Select(x => _mapper.Map<NotificationDTO>(x));
+
                 var totalCount = await _notificationQuerySpecific.GetTotalCountWithFiltersAsync(filters, cancellationToken);
 
-                return new PaginatedListDTO<Notification>(
-                items,
+                return new PaginatedListDTO<NotificationDTO>(
+                itemsDTO,
                 totalCount,
                 request.Filters.PageNumber,
                 request.Filters.PageSize);
             }
             catch (Exception ex)
             {
-                //логирование
                 throw new InvalidOperationException("Ошибка при получении уведомлений", ex);
             }
         }
