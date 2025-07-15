@@ -3,8 +3,8 @@ using Infrastructure.Abstractions.BaseRepositories.GenericRepositories;
 using Microsoft.EntityFrameworkCore;
 using NotificationService.Domain.Entities;
 using NotificationService.Domain.Enum;
+using NotificationService.Infrastructure.DTO_s;
 using System.Linq.Expressions;
-using System.Runtime.CompilerServices;
 
 namespace NotificationService.Infrastructure.Data.Repositories
 {
@@ -28,26 +28,31 @@ namespace NotificationService.Infrastructure.Data.Repositories
         /// <param name="cancellationToken">Токен отмены операции</param>
         /// <returns>
         /// Асинхронный перечислитель уведомлений, соответствующих критериям фильтрации.
+        /// Общее кол-во элементов.
         /// Результаты отсортированы по дате создания (от новых к старым).
         /// </returns>
-        public async IAsyncEnumerable<Notification> GetAllPaginatedFilteredAsync(
+        public async Task<PaginatedResultDTO<Notification>> GetAllPaginatedFilteredAsync(
             Expression<Func<Notification, bool>> filters,
             int pageNumber, 
             int pageSize,
-            [EnumeratorCancellation] CancellationToken cancellationToken)
+            CancellationToken cancellationToken)
         {
             var query = _bdSet
                 .AsNoTracking()
                 .Where(filters)
-                .OrderByDescending(n => n.CreatedAt)
+                .OrderByDescending(n => n.CreatedAt);
+
+            var itemQuery = query
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize);
 
-            await foreach (var item in query.AsAsyncEnumerable()
-                .WithCancellation(cancellationToken))
-            {
-                yield return item;
-            }
+
+            var totalCount = query.CountAsync(cancellationToken);
+            var itemAsyncEnumerable = itemQuery.AsAsyncEnumerable();
+
+            return new PaginatedResultDTO<Notification>(
+                itemAsyncEnumerable,
+                await totalCount);
         }
 
         public async Task<int> GetTotalCountWithFiltersAsync(
@@ -56,7 +61,7 @@ namespace NotificationService.Infrastructure.Data.Repositories
         {
             return await _bdSet
                 .Where(filters)
-                .CountAsync();
+                .CountAsync(cancellationToken);
         }
 
         /// <summary>

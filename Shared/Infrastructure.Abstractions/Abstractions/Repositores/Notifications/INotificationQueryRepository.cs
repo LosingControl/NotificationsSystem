@@ -1,5 +1,6 @@
 ﻿using NotificationService.Domain.Entities;
 using NotificationService.Domain.Enum;
+using NotificationService.Infrastructure.DTO_s;
 using System.Linq.Expressions;
 
 namespace Infrastructure.Abstractions.Abstractions.Repositores.Notifications
@@ -32,8 +33,8 @@ namespace Infrastructure.Abstractions.Abstractions.Repositores.Notifications
         /// <param name="pageNumber">Номер страницы (начиная с 1)</param>
         /// <param name="pageSize">Количество элементов на странице</param>
         /// <param name="cancellationToken">Токен отмены операции</param>
-        /// <returns>Асинхронный перечислитель уведомлений</returns>
-        public IAsyncEnumerable<Notification> GetAllPaginatedFilteredAsync(
+        /// <returns>Асинхронный перечислитель уведомлений и общее кол-во элементов</returns>
+        public Task<PaginatedResultDTO<Notification>> GetAllPaginatedFilteredAsync(
             Expression<Func<Notification, bool>> filters,
             int pageNumber, 
             int pageSize,

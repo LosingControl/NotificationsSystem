@@ -33,25 +33,22 @@ namespace NotificationService.API.Middlewares
             }
             catch (InvalidOperationException ex)
             {
+                HttpStatusCode statusCode = GetStatusCodeFromException(ex);
+
                 await HandleExceptionAsync(
                     httpContext,
                     ex.Message,
-                    HttpStatusCode.BadRequest);
+                    statusCode);
             }
-            catch (ValidationException ex)
+        }
+
+        private HttpStatusCode GetStatusCodeFromException(Exception ex)
+        {
+            return ex switch
             {
-                await HandleExceptionAsync(
-                    httpContext,
-                    ex.Message,
-                    HttpStatusCode.BadRequest);
-            }
-            catch (Exception ex)
-            {
-                await HandleExceptionAsync(
-                    httpContext,
-                    ex.Message,
-                    HttpStatusCode.InternalServerError);
-            }
+                InvalidOperationException or ValidationException => HttpStatusCode.BadRequest,
+                _ => HttpStatusCode.InternalServerError,
+            };
         }
 
         /// <summary>

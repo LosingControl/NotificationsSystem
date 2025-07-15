@@ -1,6 +1,8 @@
 ﻿using Infrastructure.Abstractions.Abstractions.Repositores.Notifications;
 using Infrastructure.Abstractions.BaseRepositories.GenericRepositories;
+using Microsoft.EntityFrameworkCore;
 using NotificationService.Domain.Entities;
+using System.ComponentModel;
 
 namespace NotificationService.Infrastructure.Data.Repositories
 {
@@ -19,5 +21,23 @@ namespace NotificationService.Infrastructure.Data.Repositories
     {
         public NotificationCommandRepository(AppDbContext bdContext) : base(bdContext)
         { }
+
+        /// <summary>
+        /// Удаляет уведомления по коллекции идентификаторов
+        /// </summary>
+        /// <param name="ids">Идентификаторы</param>
+        /// <param name="cancellationToken">Токен отмены операции</param>
+        /// <returns>
+        /// <c>true</c> - если уведомление было успешно удалено,
+        /// <c>false</c> - если уведомление с указанным ID не найдено
+        /// </returns>
+        public async Task<bool> ExecuteDeleteAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken)
+        {
+            var deletedCount = await _bdSet
+                .Where(x => ids.Contains(x.Id))
+                .ExecuteDeleteAsync(cancellationToken);
+
+            return deletedCount > 0;
+        }
     }
 }

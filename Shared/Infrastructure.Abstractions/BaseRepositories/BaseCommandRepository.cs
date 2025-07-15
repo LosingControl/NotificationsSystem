@@ -42,6 +42,7 @@ namespace Infrastructure.Abstractions.BaseRepositories
         /// Удаляет уведомление по указанному идентификатору
         /// </summary>
         /// <param name="id">Идентификатор уведомления</param>
+        /// <param name="cancellationToken">Токен отмены операции</param>
         /// <returns>
         /// <c>true</c> - если уведомление было успешно удалено,
         /// <c>false</c> - если уведомление с указанным ID не найдено

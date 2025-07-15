@@ -6,7 +6,7 @@ using NotificationService.Domain.Entities;
 namespace NotificationService.Application.Queries
 {
     /// <summary>
-    /// Запрос для получения уведомлений с филтрацией
+    /// Запрос для получения уведомлений с фильтрацией
     /// </summary>
     /// <remarks>
     /// Содержит все необходимые данные для поиска уведомлений.

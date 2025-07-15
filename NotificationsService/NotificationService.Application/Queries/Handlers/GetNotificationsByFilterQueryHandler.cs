@@ -60,19 +60,17 @@ namespace NotificationService.Application.Queries.Handlers
 
             try
             {
-                var items = _notificationQuerySpecific.GetAllPaginatedFilteredAsync(
+                var paginatedResult = await _notificationQuerySpecific.GetAllPaginatedFilteredAsync(
                 filters,
                 request.Filters.PageNumber,
                 request.Filters.PageSize,
                 cancellationToken);
 
-                var itemsDTO = items.Select(x => _mapper.Map<NotificationDTO>(x));
-
-                var totalCount = await _notificationQuerySpecific.GetTotalCountWithFiltersAsync(filters, cancellationToken);
+                var itemsDTO = paginatedResult.Items.Select(x => _mapper.Map<NotificationDTO>(x));
 
                 return new PaginatedListDTO<NotificationDTO>(
                 itemsDTO,
-                totalCount,
+                paginatedResult.TotalCount,
                 request.Filters.PageNumber,
                 request.Filters.PageSize);
             }

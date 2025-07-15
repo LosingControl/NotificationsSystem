@@ -4,7 +4,7 @@ using NotificationService.Application.Commands;
 using NotificationService.Application.Common.DTO_s;
 using NotificationService.Application.Common.Pagination;
 using NotificationService.Application.Queries;
-using NotificationService.Domain.Entities;
+using static Microsoft.AspNetCore.Http.StatusCodes;
 
 namespace NotificationService.API.Controllers
 {
@@ -40,9 +40,9 @@ namespace NotificationService.API.Controllers
         /// <response code="500">Ошибка сервера при обработке запроса</response>
         /// </returns>
         [HttpPost]
-        [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(bool), Status200OK)]
+        [ProducesResponseType(Status400BadRequest)]
+        [ProducesResponseType(Status500InternalServerError)]
         public async Task<bool> CreateNotification(
             [FromBody] CreateNotificationCommand command,
             CancellationToken cancellationToken)
@@ -82,9 +82,9 @@ namespace NotificationService.API.Controllers
         /// <response code="500">Ошибка сервера при обработке запроса</response>
         /// </returns>
         [HttpGet]
-        [ProducesResponseType(typeof(PaginatedListDTO<NotificationDTO>), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(PaginatedListDTO<NotificationDTO>), Status200OK)]
+        [ProducesResponseType(Status400BadRequest)]
+        [ProducesResponseType(Status500InternalServerError)]
         public async Task<ActionResult<PaginatedListDTO<NotificationDTO>>> GetNotifications(
             [FromQuery] NotificationFiltersDTO filters,
             CancellationToken cancellationToken)
