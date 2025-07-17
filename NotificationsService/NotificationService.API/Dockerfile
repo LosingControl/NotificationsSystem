@@ -3,30 +3,35 @@
 # В зависимости от операционной системы хост-компьютеров, которые будут выполнять сборку контейнеров или запускать их, может потребоваться изменить образ, указанный в инструкции FROM.
 # Дополнительные сведения см. на странице https://aka.ms/containercompat
 
-# Этот этап используется при запуске из VS в быстром режиме (по умолчанию для конфигурации отладки)
-FROM mcr.microsoft.com/dotnet/aspnet:8.0-nanoserver-1809 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 WORKDIR /app
+ENV LANG C.UTF-8
+ENV LC_ALL C.UTF-8
 EXPOSE 8080
 EXPOSE 8081
 
-
-# Этот этап используется для сборки проекта службы
-FROM mcr.microsoft.com/dotnet/sdk:8.0-nanoserver-1809 AS build
-ARG BUILD_CONFIGURATION=Release
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
-COPY ["Notification.API/Notification.API.csproj", "Notification.API/"]
-RUN dotnet restore "./Notification.API/Notification.API.csproj"
+
+COPY ["Shared/Infrastructure.Abstractions/Infrastructure.Abstractions.csproj", "Shared/Infrastructure.Abstractions/"]
+COPY ["NotificationsService/NotificationService.Domain/NotificationService.Domain.csproj", "NotificationsService/NotificationService.Domain/"]
+COPY ["NotificationsService/NotificationService.Application/NotificationService.Application.csproj", "NotificationsService/NotificationService.Application/"]
+COPY ["NotificationsService/NotificationService.Infrastructure/NotificationService.Infrastructure.csproj", "NotificationsService/NotificationService.Infrastructure/"]
+COPY ["NotificationsService/NotificationService.API/NotificationService.API.csproj", "NotificationsService/NotificationService.API/"]
+
+RUN dotnet tool install --global dotnet-ef
+RUN dotnet restore "NotificationsService/NotificationService.API/NotificationService.API.csproj"
+
 COPY . .
-WORKDIR "/src/Notification.API"
-RUN dotnet build "./Notification.API.csproj" -c %BUILD_CONFIGURATION% -o /app/build
+WORKDIR "/src/NotificationsService/NotificationService.API"
+RUN dotnet build "NotificationService.API.csproj" -c Release -o /app/build
 
-# Этот этап используется для публикации проекта службы, который будет скопирован на последний этап
 FROM build AS publish
-ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./Notification.API.csproj" -c %BUILD_CONFIGURATION% -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "NotificationService.API.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
-# Этот этап используется в рабочей среде или при запуске из VS в обычном режиме (по умолчанию, когда конфигурация отладки не используется)
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "Notification.API.dll"]
+ENV LANG C.UTF-8
+ENV LC_ALL C.UTF-8
+ENTRYPOINT ["dotnet", "NotificationService.API.dll"]

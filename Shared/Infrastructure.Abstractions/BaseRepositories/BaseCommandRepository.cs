@@ -1,5 +1,6 @@
 ﻿using Infrastructure.Abstractions.Abstractions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace Infrastructure.Abstractions.BaseRepositories
 {
@@ -9,10 +10,16 @@ namespace Infrastructure.Abstractions.BaseRepositories
     /// <typeparam name="TEntity">Тип сущности репозитория</typeparam>
     public abstract class BaseCommandRepository<TEntity> : ICommandRepository<TEntity> where TEntity : class
     {
+        protected readonly IDistributedCache _distributedCache;
+        protected readonly DistributedCacheEntryOptions _cacheOptions;
+        protected readonly List<Func<Task>> _postSaveActions = new();
         protected readonly DbContext _context;
         protected readonly DbSet<TEntity> _bdSet;
 
-        protected BaseCommandRepository(DbContext context)
+        protected BaseCommandRepository(
+            DbContext context, 
+            IDistributedCache distributedCache, 
+            DistributedCacheEntryOptions cacheOptions)
         {
             if (context == null)
             {
@@ -21,6 +28,8 @@ namespace Infrastructure.Abstractions.BaseRepositories
 
             _context = context;
             _bdSet = _context.Set<TEntity>();
+            _cacheOptions = cacheOptions;
+            _distributedCache = distributedCache;
         }
 
         /// <summary>
@@ -35,7 +44,17 @@ namespace Infrastructure.Abstractions.BaseRepositories
         {
             await _bdSet.AddAsync(entity, cancellationToken);
 
-            return await _context.SaveChangesAsync(cancellationToken) > 0;
+            var result = await _context.SaveChangesAsync(cancellationToken) > 0;
+
+            if (result)
+            {
+                foreach (var action in _postSaveActions)
+                {
+                    await action();
+                }
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -58,6 +77,11 @@ namespace Infrastructure.Abstractions.BaseRepositories
 
             _context.Remove(entity);
             return await _context.SaveChangesAsync(cancellationToken) > 0;
+        }
+
+        public void AddPostSaveAction(Func<Task> action)
+        {
+            _postSaveActions.Add(action);
         }
     }
 }

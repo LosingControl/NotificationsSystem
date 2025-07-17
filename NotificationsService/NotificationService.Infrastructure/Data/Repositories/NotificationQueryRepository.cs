@@ -1,10 +1,12 @@
 ﻿using Infrastructure.Abstractions.Abstractions.Repositores.Notifications;
 using Infrastructure.Abstractions.BaseRepositories.GenericRepositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 using NotificationService.Domain.Entities;
 using NotificationService.Domain.Enum;
 using NotificationService.Infrastructure.DTO_s;
 using System.Linq.Expressions;
+using System.Text.Json;
 
 namespace NotificationService.Infrastructure.Data.Repositories
 {
@@ -16,7 +18,10 @@ namespace NotificationService.Infrastructure.Data.Repositories
     /// </remarks>
     public class NotificationQueryRepository : QueryRepository<Notification>, INotificationQueryRepository
     {
-        public NotificationQueryRepository(AppDbContext bdContext) : base(bdContext)
+        public NotificationQueryRepository(
+            AppDbContext bdContext, 
+            IDistributedCache _distributedCache,
+            DistributedCacheEntryOptions _cacheOptions) : base(bdContext, _distributedCache, _cacheOptions)
         { }
 
         /// <summary>
@@ -37,53 +42,122 @@ namespace NotificationService.Infrastructure.Data.Repositories
             int pageSize,
             CancellationToken cancellationToken)
         {
+            var cacheKey = $"notifications:keys:{filters.ToString()}:{pageNumber}:{pageSize}";
+            var cachedIds = await _distributedCache.GetStringAsync(cacheKey, cancellationToken);
+
+            if (cachedIds != null)
+            {
+                return await GetAllFromCache(filters, cachedIds, cancellationToken);
+            }
+
             var query = _bdSet
                 .AsNoTracking()
                 .Where(filters)
                 .OrderByDescending(n => n.CreatedAt);
 
-            var itemQuery = query
+            var pageIds = await query
                 .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize);
+                .Take(pageSize)
+                .Select(x => x.Id)
+                .ToListAsync(cancellationToken);
 
+            await _distributedCache.SetStringAsync(
+                cacheKey,
+                JsonSerializer.Serialize(pageIds),
+                _cacheOptions,
+                cancellationToken);
 
-            var totalCount = query.CountAsync(cancellationToken);
-            var itemAsyncEnumerable = itemQuery.AsAsyncEnumerable();
+            var resultQuery = _bdSet
+                .AsNoTracking()
+                .Where(x => pageIds.Contains(x.Id))
+                .OrderByDescending(n => n.CreatedAt);
 
             return new PaginatedResultDTO<Notification>(
-                itemAsyncEnumerable,
-                await totalCount);
+                resultQuery.AsAsyncEnumerable(),
+                await query.CountAsync(cancellationToken));
+        }
+
+        private async Task<PaginatedResultDTO<Notification>> GetAllFromCache(
+            Expression<Func<Notification, bool>> filters, 
+            string cachedIds, 
+            CancellationToken cancellationToken)
+        {
+            var ids = JsonSerializer.Deserialize<List<Guid>>(cachedIds);
+
+            var items = _bdSet
+                .AsNoTracking()
+                .Where(x => ids.Contains(x.Id))
+                .OrderByDescending(n => n.CreatedAt)
+                .AsAsyncEnumerable();
+
+            var totalCount = await GetTotalCountWithFiltersAsync(filters, cancellationToken);
+
+            return new PaginatedResultDTO<Notification>(items, totalCount);
         }
 
         public async Task<int> GetTotalCountWithFiltersAsync(
             Expression<Func<Notification, bool>> filters,
             CancellationToken cancellationToken)
         {
-            return await _bdSet
+            var cacheKey = $"cauntSingl:{filters.ToString()}";
+            var cachedData = await _distributedCache.GetStringAsync(cacheKey, cancellationToken);
+
+            if (cachedData != null)
+            {
+                return JsonSerializer.Deserialize<int>(cachedData);
+            }
+
+            var count = await _bdSet
                 .Where(filters)
                 .CountAsync(cancellationToken);
+
+            await _distributedCache.SetStringAsync(
+                cacheKey,
+                JsonSerializer.Serialize(cachedData),
+                _cacheOptions,
+                cancellationToken); 
+
+            return count;
         }
 
         /// <summary>
         /// Получает список уведомлений по статусу
         /// </summary>
         /// <param name="status">Статус уведомлений</param>
+        /// <param name="cancellationToken">Токен отмены операции</param>
         /// <returns>
         /// Список уведомлений с указанным статусом.
         /// Возвращает пустой список, если уведомлений не найдено.
         /// </returns>
         public async Task<List<Notification>> GetByStatusAsync(NotificationStatus? status, CancellationToken cancellationToken)
         {
-            return await _bdSet 
+            var cacheKey = $"status:{status}";
+            var cachedData = await _distributedCache.GetStringAsync(cacheKey, cancellationToken);
+
+            if (cachedData != null) 
+            {
+                return JsonSerializer.Deserialize<List<Notification>>(cachedData);
+            }
+
+            var notifications = await _bdSet
                 .AsNoTracking()
                 .Where(s => s.Status == status)
                 .ToListAsync(cancellationToken);
+
+            await _distributedCache.SetStringAsync(
+                cacheKey,
+                JsonSerializer.Serialize(notifications),
+                _cacheOptions,
+                cancellationToken);
+
+            return notifications;
         }
 
         /// <summary>
         /// Получает список уведомлений пользователя
         /// </summary>
         /// <param name="id">Идентификатор пользователя</param>
+        /// <param name="cancellationToken">Токен отмены операции</param>
         /// <returns>
         /// Список уведомлений, отсортированный по дате создания (новые сначала).
         /// Возвращает пустой список, если уведомлений не найдено.
@@ -96,11 +170,27 @@ namespace NotificationService.Infrastructure.Data.Repositories
                 throw new ArgumentException("Идентификатор пользователя не может быть пустым", nameof(id));
             }
 
-            return await _bdSet
+            var cacheKey = $"id:{id}";
+            var cachedData = await _distributedCache.GetStringAsync(cacheKey, cancellationToken);
+            
+            if (cachedData != null)
+            {
+                return JsonSerializer.Deserialize<List<Notification>>(cachedData);
+            }
+
+            var notification = await _bdSet
                 .AsNoTracking()
-                .Where (n => n.UserId == id)
+                .Where(n => n.UserId == id)
                 .OrderByDescending(n => n.CreatedAt)
                 .ToListAsync(cancellationToken);
+
+            await _distributedCache.SetStringAsync(
+                cacheKey, 
+                JsonSerializer.Serialize(notification), 
+                _cacheOptions, 
+                cancellationToken);
+
+            return notification;
         }
     }
 }

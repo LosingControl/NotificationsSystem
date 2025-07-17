@@ -1,5 +1,6 @@
 ﻿using Infrastructure.Abstractions.Abstractions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace Infrastructure.Abstractions.BaseRepositories.GenericRepositories
 {
@@ -10,7 +11,10 @@ namespace Infrastructure.Abstractions.BaseRepositories.GenericRepositories
     public class CommandRepository<TEntity> : BaseCommandRepository<TEntity>, ICommandRepository<TEntity>
         where TEntity : class
     {
-        public CommandRepository(DbContext context) : base(context)
+        public CommandRepository(
+            DbContext context, 
+            IDistributedCache _distributedCache,
+            DistributedCacheEntryOptions _cacheOptions) : base(context, _distributedCache, _cacheOptions)
         { }
     }
 }

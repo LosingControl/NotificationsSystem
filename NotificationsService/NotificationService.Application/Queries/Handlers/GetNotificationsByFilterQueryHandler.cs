@@ -76,7 +76,7 @@ namespace NotificationService.Application.Queries.Handlers
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException("Ошибка при получении уведомлений", ex);
+                throw new InvalidOperationException($"Ошибка при получении уведомлений, сообщение : {ex.Message}", ex);
             }
         }
     }

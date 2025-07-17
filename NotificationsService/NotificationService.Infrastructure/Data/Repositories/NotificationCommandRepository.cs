@@ -1,6 +1,7 @@
 ﻿using Infrastructure.Abstractions.Abstractions.Repositores.Notifications;
 using Infrastructure.Abstractions.BaseRepositories.GenericRepositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 using NotificationService.Domain.Entities;
 using System.ComponentModel;
 
@@ -19,7 +20,10 @@ namespace NotificationService.Infrastructure.Data.Repositories
     /// </remarks>
     public class NotificationCommandRepository : CommandRepository<Notification>, INotificationCommandRepository
     {
-        public NotificationCommandRepository(AppDbContext bdContext) : base(bdContext)
+        public NotificationCommandRepository(
+            AppDbContext bdContext, 
+            IDistributedCache _distributedCache,
+            DistributedCacheEntryOptions _cacheOptions) : base(bdContext, _distributedCache, _cacheOptions) 
         { }
 
         /// <summary>

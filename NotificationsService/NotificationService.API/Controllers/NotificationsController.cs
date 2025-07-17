@@ -1,9 +1,12 @@
+using Infrastructure.Abstractions.Abstractions.Repositores.Notifications;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using NotificationService.Application.Commands;
 using NotificationService.Application.Common.DTO_s;
 using NotificationService.Application.Common.Pagination;
 using NotificationService.Application.Queries;
+using NotificationService.Domain.Entities;
+using NotificationService.Domain.Enum;
 using static Microsoft.AspNetCore.Http.StatusCodes;
 
 namespace NotificationService.API.Controllers
@@ -40,6 +43,7 @@ namespace NotificationService.API.Controllers
         /// <response code="500">Ошибка сервера при обработке запроса</response>
         /// </returns>
         [HttpPost]
+        [Produces("application/json; charset=utf-8")]
         [ProducesResponseType(typeof(bool), Status200OK)]
         [ProducesResponseType(Status400BadRequest)]
         [ProducesResponseType(Status500InternalServerError)]
@@ -82,6 +86,7 @@ namespace NotificationService.API.Controllers
         /// <response code="500">Ошибка сервера при обработке запроса</response>
         /// </returns>
         [HttpGet]
+        [Produces("application/json; charset=utf-8")]
         [ProducesResponseType(typeof(PaginatedListDTO<NotificationDTO>), Status200OK)]
         [ProducesResponseType(Status400BadRequest)]
         [ProducesResponseType(Status500InternalServerError)]
